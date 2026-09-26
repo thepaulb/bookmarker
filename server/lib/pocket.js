@@ -1,8 +1,5 @@
-// Parsing and importing a getpocket.com CSV export
-// (columns: title,url,time_added,tags,status).
+// Parsing a getpocket.com CSV export (columns: title,url,time_added,tags,status).
 const { parse } = require("csv-parse/sync");
-const db = require("../db");
-const { insertBookmark } = require("./bookmarks");
 const { normaliseUrl, resolveTitle } = require("./urls");
 const { normaliseTags } = require("./tags");
 
@@ -16,7 +13,7 @@ function toIsoDate(timeAdded) {
   return new Date(seconds * 1000).toISOString();
 }
 
-// Turn CSV text into bookmark records ready for insertBookmark. Rows whose
+// Turn CSV text into bookmark records ready for importBookmarks. Rows whose
 // URL isn't a usable http(s) URL are counted and skipped. Pocket's status
 // column is deliberately ignored.
 function parsePocketCsv(text) {
@@ -46,22 +43,4 @@ function parsePocketCsv(text) {
   return { records, invalid };
 }
 
-// Insert records for a user in one transaction. Safe to re-run: URLs the
-// user already has are skipped and counted as duplicates.
-const importRecords = db.transaction((userId, records) => {
-  let imported = 0;
-  let duplicates = 0;
-  for (const record of records) {
-    if (insertBookmark(userId, record) == null) duplicates += 1;
-    else imported += 1;
-  }
-  return { imported, duplicates };
-});
-
-function importPocketCsv(userId, text) {
-  const { records, invalid } = parsePocketCsv(text);
-  const { imported, duplicates } = importRecords(userId, records);
-  return { imported, duplicates, invalid: invalid.length };
-}
-
-module.exports = { parsePocketCsv, importPocketCsv, toIsoDate };
+module.exports = { parsePocketCsv, toIsoDate };

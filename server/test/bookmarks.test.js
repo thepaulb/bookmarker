@@ -253,6 +253,22 @@ describe("POST /api/bookmarks", () => {
     });
   });
 
+  it("strips tracking parameters before saving", async () => {
+    const res = await post({
+      url: "https://example.com/article?id=3&utm_source=newsletter&fbclid=abc",
+    });
+    expect(res.body.url).toBe("https://example.com/article?id=3");
+  });
+
+  it("treats a URL with tracking parameters as a duplicate of the clean one", async () => {
+    const existingId = seedBookmark(user.id, { url: "https://example.com/article" });
+    const res = await post({
+      url: "https://example.com/article?utm_campaign=spring",
+    });
+    expect(res.status).toBe(409);
+    expect(res.body.existingId).toBe(existingId);
+  });
+
   it("allows the same URL for different users", async () => {
     const other = seedUser("alex");
     seedBookmark(other.id, { url: "https://example.com/" });

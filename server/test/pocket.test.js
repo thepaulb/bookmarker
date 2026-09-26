@@ -3,7 +3,8 @@ import { createRequire } from "node:module";
 import { db, seedUser } from "./helpers.js";
 
 const require = createRequire(import.meta.url);
-const { parsePocketCsv, importPocketCsv, toIsoDate } = require("../lib/pocket");
+const { parsePocketCsv, toIsoDate } = require("../lib/pocket");
+const { importBookmarks } = require("../lib/importer");
 const { listBookmarks, listTags } = require("../lib/bookmarks");
 
 const CSV = `title,url,time_added,tags,status
@@ -70,10 +71,17 @@ describe("parsePocketCsv", () => {
   });
 });
 
-describe("importPocketCsv", () => {
-  it("imports bookmarks and tags for the user", () => {
+// Parse then import, as the CLI does for a .csv file.
+async function importPocketCsv(userId, text) {
+  const { records, invalid } = parsePocketCsv(text);
+  const result = await importBookmarks(userId, records);
+  return { imported: result.imported, duplicates: result.duplicates, invalid: invalid.length };
+}
+
+describe("importing a Pocket export", () => {
+  it("imports bookmarks and tags for the user", async () => {
     const user = seedUser("paul");
-    const result = importPocketCsv(user.id, CSV);
+    const result = await importPocketCsv(user.id, CSV);
 
     expect(result).toEqual({ imported: 3, duplicates: 1, invalid: 1 });
 
@@ -91,21 +99,21 @@ describe("importPocketCsv", () => {
     ]);
   });
 
-  it("is safe to run twice", () => {
+  it("is safe to run twice", async () => {
     const user = seedUser("paul");
-    importPocketCsv(user.id, CSV);
-    const second = importPocketCsv(user.id, CSV);
+    await importPocketCsv(user.id, CSV);
+    const second = await importPocketCsv(user.id, CSV);
 
     expect(second).toEqual({ imported: 0, duplicates: 4, invalid: 1 });
     const count = db.prepare("SELECT COUNT(*) AS n FROM bookmarks").get().n;
     expect(count).toBe(3);
   });
 
-  it("keeps each user's import separate", () => {
+  it("keeps each user's import separate", async () => {
     const paul = seedUser("paul");
     const alex = seedUser("alex");
-    importPocketCsv(paul.id, CSV);
+    await importPocketCsv(paul.id, CSV);
 
-    expect(importPocketCsv(alex.id, CSV).imported).toBe(3);
+    expect((await importPocketCsv(alex.id, CSV)).imported).toBe(3);
   });
 });

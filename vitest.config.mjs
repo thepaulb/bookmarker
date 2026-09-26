@@ -21,7 +21,8 @@ export default defineConfig({
       exclude: [
         "server/test/**",
         "server/index.js",
-        "server/import-pocket.js",
+        "server/import-bookmarks.js",
+        "server/clean-urls.js",
         "server/**/*.test.js",
       ],
       reporter: ["text", "html"],

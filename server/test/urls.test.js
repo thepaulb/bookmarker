@@ -46,6 +46,68 @@ describe("normaliseUrl", () => {
   it("rejects URLs over 2048 characters", () => {
     expect(normaliseUrl(`https://example.com/${"a".repeat(2100)}`)).toBeNull();
   });
+
+  describe("tracking parameters", () => {
+    it("strips utm_* parameters, keeping real ones", () => {
+      expect(
+        normaliseUrl(
+          "https://example.com/post?id=7&utm_source=news&utm_medium=email&UTM_Campaign=x",
+        ),
+      ).toBe("https://example.com/post?id=7");
+    });
+
+    it("drops the query string entirely when only tracking remains", () => {
+      expect(
+        normaliseUrl("https://mbrizic.com/blog/react-is-insane/?utm_source=tldrwebdev"),
+      ).toBe("https://mbrizic.com/blog/react-is-insane/");
+    });
+
+    it("strips identifiers such as TED's user_email_address", () => {
+      expect(
+        normaliseUrl(
+          "https://www.ted.com/talks/dan_pink?user_email_address=4b0dc23c&lctg=62d1",
+        ),
+      ).toBe("https://www.ted.com/talks/dan_pink");
+    });
+
+    it.each(["fbclid", "gclid", "mc_cid", "mc_eid", "_hsenc", "mkt_tok", "igshid"])(
+      "strips %s",
+      (param) => {
+        expect(normaliseUrl(`https://example.com/a?${param}=abc`)).toBe(
+          "https://example.com/a",
+        );
+      },
+    );
+
+    it("strips YouTube share tracking but keeps the video and playlist", () => {
+      expect(
+        normaliseUrl(
+          "https://www.youtube.com/watch?v=0F3QP2Bt1KI&list=PL0h&index=5&si=abc&feature=shared",
+        ),
+      ).toBe("https://www.youtube.com/watch?v=0F3QP2Bt1KI&list=PL0h&index=5");
+      expect(normaliseUrl("https://youtube.com/shorts/QDIQ?si=7ODi")).toBe(
+        "https://youtube.com/shorts/QDIQ",
+      );
+    });
+
+    it("keeps si on sites where it isn't tracking", () => {
+      expect(normaliseUrl("https://example.com/search?si=2")).toBe(
+        "https://example.com/search?si=2",
+      );
+    });
+
+    it("leaves untouched query strings exactly as they were", () => {
+      expect(normaliseUrl("https://example.com/s?q=a%20b&x=1")).toBe(
+        "https://example.com/s?q=a%20b&x=1",
+      );
+    });
+
+    it("keeps the fragment", () => {
+      expect(normaliseUrl("https://example.com/a?utm_source=x#section")).toBe(
+        "https://example.com/a#section",
+      );
+    });
+  });
 });
 
 describe("titleFromUrl", () => {

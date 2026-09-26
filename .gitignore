@@ -16,3 +16,6 @@ Pocket export/
 .DS_Store
 .vite/
 vite.config.js.timestamp-*
+
+# Database backups
+backups/

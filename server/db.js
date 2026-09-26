@@ -4,6 +4,17 @@ const path = require("path");
 
 // DB_PATH lets tests point at a throwaway database (e.g. ":memory:");
 // otherwise we use server/bookmarks.db.
+//
+// Tests reset the schema between cases, so a test run must never open a
+// real file. Vitest always sets VITEST; if the in-memory DB_PATH from
+// vitest.config.mjs didn't arrive (e.g. the config wasn't found), stop.
+if (process.env.VITEST && process.env.DB_PATH !== ":memory:") {
+  throw new Error(
+    "Refusing to open a real database under Vitest: DB_PATH must be ':memory:'. " +
+      "Run server tests from the project root (npm run test:server).",
+  );
+}
+
 const db = new Database(
   process.env.DB_PATH || path.join(__dirname, "bookmarks.db"),
 );
