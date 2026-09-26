@@ -4,3 +4,9 @@ import { request } from "./http";
 export function getTags() {
   return request("/tags");
 }
+
+// Pairs of tags saved on the same bookmark as [{ a, b, count }],
+// strongest first.
+export function getTagLinks() {
+  return request("/tags/links");
+}

@@ -175,6 +175,27 @@ function listTags(userId) {
     .all(userId);
 }
 
+// Pairs of the user's tags that appear together on at least one bookmark,
+// with how many bookmarks they share. Each pair appears once, its names in
+// A–Z order; strongest pairs first. Drives the tag star map's lines.
+function listTagLinks(userId) {
+  return db
+    .prepare(
+      `SELECT MIN(ta.name, tb.name) AS a,
+              MAX(ta.name, tb.name) AS b,
+              COUNT(*) AS count
+         FROM bookmark_tags x
+         JOIN bookmark_tags y
+           ON y.bookmark_id = x.bookmark_id AND y.tag_id > x.tag_id
+         JOIN tags ta ON ta.id = x.tag_id
+         JOIN tags tb ON tb.id = y.tag_id
+        WHERE ta.user_id = ?
+        GROUP BY x.tag_id, y.tag_id
+        ORDER BY count DESC, a, b`,
+    )
+    .all(userId);
+}
+
 module.exports = {
   PAGE_SIZE,
   listBookmarks,
@@ -183,4 +204,5 @@ module.exports = {
   insertBookmark,
   deleteBookmark,
   listTags,
+  listTagLinks,
 };
