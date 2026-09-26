@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import Wordmark from "../components/Wordmark";
 
 // Sign-in screen. On a brand-new install (no users yet) it instead creates
 // the first account, which is then signed in.
@@ -41,7 +42,9 @@ export default function Login() {
 
   return (
     <main className="auth-page">
-      <p className="brand">Bookmarker</p>
+      <p className="brand">
+        <Wordmark size="small" />
+      </p>
       <h1>{needsSetup ? "Create your account" : "Sign in"}</h1>
       {needsSetup && (
         <p className="muted">

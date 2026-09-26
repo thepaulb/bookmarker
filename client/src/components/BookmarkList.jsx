@@ -1,4 +1,5 @@
 import BookmarkItem from "./BookmarkItem";
+import styles from "./BookmarkList.module.scss";
 
 // Renders a feed from useBookmarkFeed: loading/error states, the list, and
 // a "Load more" button when the caller allows paging.
@@ -23,7 +24,7 @@ export default function BookmarkList({
       {bookmarks.length === 0 && !error ? (
         <p className="muted">{emptyMessage}</p>
       ) : (
-        <ul className="plain-list">
+        <ul className={styles.timeline}>
           {bookmarks.map((b) => (
             <BookmarkItem key={b.id} bookmark={b} onDelete={remove} />
           ))}

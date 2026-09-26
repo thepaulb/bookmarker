@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatDate, normaliseTag, tagPath } from "./format";
+import { domainOf, formatDate, normaliseTag, tagPath } from "./format";
 
 describe("formatDate", () => {
   it("formats an ISO date as a short UK date", () => {
@@ -26,5 +26,19 @@ describe("tagPath", () => {
     expect(tagPath("ux")).toBe("/tags/ux");
     expect(tagPath("s&s")).toBe("/tags/s%26s");
     expect(tagPath("python datascience")).toBe("/tags/python%20datascience");
+  });
+});
+
+describe("domainOf", () => {
+  it("returns the host without www", () => {
+    expect(domainOf("https://www.bbc.co.uk/news")).toBe("bbc.co.uk");
+    expect(domainOf("http://1.1.1.1/")).toBe("1.1.1.1");
+    expect(domainOf("https://en.wikipedia.org/wiki/FF_DIN")).toBe(
+      "en.wikipedia.org",
+    );
+  });
+
+  it("returns the input when it is not a URL", () => {
+    expect(domainOf("not a url")).toBe("not a url");
   });
 });

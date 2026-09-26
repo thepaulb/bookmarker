@@ -10,6 +10,7 @@ export default function Home() {
   return (
     <>
       <h1>Recent bookmarks</h1>
+      <p className="page-intro">Newest first</p>
       <BookmarkList
         feed={feed}
         pageable={false}

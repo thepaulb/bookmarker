@@ -10,6 +10,15 @@ export function formatDate(iso) {
   return Number.isNaN(date.getTime()) ? "" : DATE_FORMAT.format(date);
 }
 
+// "https://www.bbc.co.uk/news" -> "bbc.co.uk". Falls back to the input.
+export function domainOf(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return url;
+  }
+}
+
 // Mirrors the server's normaliseTag (server/lib/tags.js) so a new tag shows
 // in the picker exactly as it will be saved.
 export function normaliseTag(raw) {

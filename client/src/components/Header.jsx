@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import Wordmark from "./Wordmark";
 import styles from "./Header.module.scss";
 
 export default function Header() {
@@ -21,20 +22,27 @@ export default function Header() {
     navigate("/login");
   }
 
+  // The wordmark sits centred between two navs, mirrored either side.
   return (
     <header className={styles.header}>
       <div className={styles.bar}>
-        <Link to="/" className={styles.brand}>
-          Bookmarker
-        </Link>
-
-        <nav className={styles.nav} aria-label="Main">
+        <nav className={styles.primary} aria-label="Main">
           <Link to="/addbookmark" className={styles.add}>
-            Add
+            <svg viewBox="0 0 14 14" aria-hidden="true">
+              <path d="M7 1v12M1 7h12" />
+            </svg>
+            Add bookmark
           </Link>
           <NavLink to="/tags" className={styles.link}>
             Tags
           </NavLink>
+        </nav>
+
+        <Link to="/" className={styles.brand}>
+          <Wordmark />
+        </Link>
+
+        <nav className={styles.account} aria-label="Account">
           <NavLink to="/users/new" className={styles.link}>
             Add user
           </NavLink>
@@ -45,6 +53,9 @@ export default function Header() {
       </div>
 
       <form role="search" className={styles.search} onSubmit={handleSearch}>
+        <svg className={styles.moon} viewBox="0 0 22 22" aria-hidden="true">
+          <path d="M14 2.5a9 9 0 1 0 5.5 14.6A7.5 7.5 0 0 1 14 2.5z" />
+        </svg>
         <label htmlFor="search" className="visually-hidden">
           Search bookmarks
         </label>

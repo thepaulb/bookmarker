@@ -1,0 +1,29 @@
+// The timeline's line: down the left on phones, down the centre when the
+// cards alternate either side (matches BookmarkItem's breakpoint).
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 5px;
+    width: 1px;
+    background: var(--line);
+  }
+
+  @media (min-width: 60rem) {
+    gap: 0.875rem;
+
+    &::before {
+      left: 50%;
+    }
+  }
+}
