@@ -1,0 +1,18 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+
+# SQLite database and its WAL sidecars
+*.db
+*.db-shm
+*.db-wal
+
+# Personal Pocket export — imported locally, never committed
+Pocket export/
+
+.DS_Store
+.vite/
+vite.config.js.timestamp-*

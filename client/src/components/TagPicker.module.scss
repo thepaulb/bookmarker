@@ -1,0 +1,21 @@
+.picker select {
+  width: 100%;
+}
+
+.help,
+.selected {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.newTag {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+
+  input {
+    flex: 1;
+    min-width: 0;
+  }
+}
