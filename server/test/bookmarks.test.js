@@ -22,6 +22,7 @@ describe("authentication", () => {
     ["post", "/api/bookmarks"],
     ["delete", "/api/bookmarks/1"],
     ["get", "/api/tags"],
+    ["get", "/api/tags/links"],
   ])("%s %s requires a session", async (method, path) => {
     const res = await request(app)[method](path);
     expect(res.status).toBe(401);
@@ -369,6 +370,38 @@ describe("GET /api/tags", () => {
     seedBookmark(other.id, { tags: ["secret"] });
 
     const res = await request(app).get("/api/tags").set("Cookie", cookie);
+    expect(res.body).toEqual([]);
+  });
+});
+
+describe("GET /api/tags/links", () => {
+  it("counts bookmarks shared by each pair of tags, strongest first", async () => {
+    seedBookmark(user.id, { tags: ["ux", "agile"] });
+    seedBookmark(user.id, { tags: ["agile", "ux", "css"] });
+    seedBookmark(user.id, { tags: ["css"] });
+
+    const res = await request(app).get("/api/tags/links").set("Cookie", cookie);
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual([
+      { a: "agile", b: "ux", count: 2 },
+      { a: "agile", b: "css", count: 1 },
+      { a: "css", b: "ux", count: 1 },
+    ]);
+  });
+
+  it("returns [] when no bookmark has two tags", async () => {
+    seedBookmark(user.id, { tags: ["ux"] });
+    seedBookmark(user.id, { tags: ["agile"] });
+
+    const res = await request(app).get("/api/tags/links").set("Cookie", cookie);
+    expect(res.body).toEqual([]);
+  });
+
+  it("excludes other users' tags", async () => {
+    const other = seedUser("alex");
+    seedBookmark(other.id, { tags: ["secret", "plans"] });
+
+    const res = await request(app).get("/api/tags/links").set("Cookie", cookie);
     expect(res.body).toEqual([]);
   });
 });

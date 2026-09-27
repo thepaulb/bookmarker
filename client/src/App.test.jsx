@@ -44,7 +44,7 @@ describe("App routes", () => {
       await screen.findByRole("heading", { name: "Recent bookmarks" }),
     ).toBeInTheDocument();
     expect(await screen.findByRole("link", { name: "Hello" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Add" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Add bookmark" })).toBeInTheDocument();
   });
 
   it.each([

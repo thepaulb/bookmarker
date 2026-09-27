@@ -5,9 +5,9 @@ import Header from "./Header";
 import { renderPage, fakeAuth } from "../test/utils";
 
 describe("Header", () => {
-  it("has Add, Tags and Add user links", () => {
+  it("has Add bookmark, Tags and Add user links", () => {
     renderPage(<Header />);
-    expect(screen.getByRole("link", { name: "Add" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Add bookmark" })).toHaveAttribute(
       "href",
       "/addbookmark",
     );

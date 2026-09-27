@@ -26,7 +26,40 @@ describe("Home", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Older" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Load more" })).not.toBeInTheDocument();
-    expect(fetchMock.mock.calls[0][0]).toBe("/api/bookmarks");
+    expect(fetchMock.mock.calls.map((c) => c[0])).toContain("/api/bookmarks");
+  });
+
+  it("draws the biggest tags as a strip of stars linking to their pages", async () => {
+    mockApi(({ path }) => {
+      if (path === "/tags")
+        return {
+          body: [
+            { name: "fitness", count: 9 },
+            { name: "mobility", count: 3 },
+          ],
+        };
+      if (path === "/tags/links")
+        return { body: [{ a: "fitness", b: "mobility", count: 2 }] };
+      return page([]);
+    });
+    renderPage(<Home />);
+
+    const band = await screen.findByRole("region", { name: "Your brightest tags" });
+    expect(
+      within(band).getByRole("link", { name: "fitness, 9 bookmarks" }),
+    ).toHaveAttribute("href", "/tags/fitness");
+  });
+
+  it("leaves out the strip when tags can't be loaded", async () => {
+    mockApi(({ path }) =>
+      path.startsWith("/tags") ? { status: 500, body: {} } : page([]),
+    );
+    renderPage(<Home />);
+
+    await screen.findByRole("link", { name: "Add your first one" });
+    expect(
+      screen.queryByRole("region", { name: "Your brightest tags" }),
+    ).not.toBeInTheDocument();
   });
 
   it("invites the user to add their first bookmark", async () => {
@@ -76,25 +109,119 @@ describe("Results", () => {
 });
 
 describe("Tags", () => {
-  it("lists tags with counts as links to their pages", async () => {
-    mockApi(() => ({
-      body: [
-        { name: "agile", count: 3 },
-        { name: "s&s", count: 1 },
-      ],
-    }));
+  const TAGS = [
+    { name: "agile", count: 3 },
+    { name: "fitness", count: 9 },
+    { name: "mobility", count: 4 },
+    { name: "s&s", count: 1 },
+  ];
+  const LINKS = [
+    { a: "fitness", b: "mobility", count: 2 },
+    { a: "agile", b: "s&s", count: 1 },
+  ];
+
+  function tagsApi({ tags = TAGS, links = LINKS } = {}) {
+    return mockApi(({ path }) => {
+      if (path === "/tags") return { body: tags };
+      if (path === "/tags/links") return { body: links };
+    });
+  }
+
+  it("draws each tag as a star and selects the biggest", async () => {
+    tagsApi();
     renderPage(<Tags />, { route: "/tags" });
 
-    const link = await screen.findByRole("link", { name: "s&s (1)" });
-    expect(link).toHaveAttribute("href", "/tags/s%26s");
+    const sky = await screen.findByRole("region", { name: "Tag sky" });
+    expect(
+      within(sky).getByRole("button", { name: "fitness, 9 bookmarks" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(sky).getByRole("button", { name: "s&s, 1 bookmark" }),
+    ).toHaveAttribute("aria-pressed", "false");
+
+    expect(screen.getByRole("heading", { name: "fitness" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "mobility, 2 shared" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "View 9 bookmarks" })).toHaveAttribute(
+      "href",
+      "/tags/fitness",
+    );
+  });
+
+  it("selects a star when clicked, or via a partner tag", async () => {
+    tagsApi();
+    renderPage(<Tags />, { route: "/tags" });
+
+    await userEvent.click(
+      await screen.findByRole("button", { name: "agile, 3 bookmarks" }),
+    );
+    expect(screen.getByRole("heading", { name: "agile" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "View 3 bookmarks" })).toHaveAttribute(
+      "href",
+      "/tags/agile",
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "s&s, 1 shared" }));
+    expect(screen.getByRole("heading", { name: "s&s" })).toBeInTheDocument();
+  });
+
+  it("lists the strongest links", async () => {
+    tagsApi();
+    renderPage(<Tags />, { route: "/tags" });
+
+    const panel = (
+      await screen.findByRole("heading", { name: "Strongest links" })
+    ).closest("section");
+    const rows = within(panel).getAllByRole("listitem");
+    expect(rows[0]).toHaveTextContent(/fitness.*mobility.*2/);
+    expect(rows[1]).toHaveTextContent(/agile.*s&s.*1/);
+  });
+
+  it("still draws the stars if the links fail to load", async () => {
+    mockApi(({ path }) =>
+      path === "/tags" ? { body: TAGS } : { status: 500, body: {} },
+    );
+    renderPage(<Tags />, { route: "/tags" });
+
+    expect(
+      await screen.findByRole("button", { name: "fitness, 9 bookmarks" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/No two tags share a bookmark yet/),
+    ).toBeInTheDocument();
+  });
+
+  it("switches to an A–Z list of every tag linking to its page", async () => {
+    tagsApi();
+    renderPage(<Tags />, { route: "/tags" });
+
+    await userEvent.click(await screen.findByRole("button", { name: "A–Z list" }));
+    expect(screen.queryByRole("region", { name: "Tag sky" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "s&s (1)" })).toHaveAttribute(
+      "href",
+      "/tags/s%26s",
+    );
     expect(screen.getByRole("link", { name: "agile (3)" })).toHaveAttribute(
       "href",
       "/tags/agile",
     );
   });
 
+  it("filters the A–Z list with Find a tag", async () => {
+    tagsApi();
+    renderPage(<Tags />, { route: "/tags" });
+
+    await userEvent.click(await screen.findByRole("button", { name: "A–Z list" }));
+    await userEvent.type(screen.getByRole("searchbox", { name: "Find a tag" }), "MOB");
+    expect(screen.getByRole("link", { name: "mobility (4)" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "agile (3)" })).not.toBeInTheDocument();
+
+    await userEvent.clear(screen.getByRole("searchbox", { name: "Find a tag" }));
+    await userEvent.type(screen.getByRole("searchbox", { name: "Find a tag" }), "zzz");
+    expect(screen.getByText("No tags match “zzz”.")).toBeInTheDocument();
+  });
+
   it("says when there are no tags", async () => {
-    mockApi(() => ({ body: [] }));
+    tagsApi({ tags: [], links: [] });
     renderPage(<Tags />, { route: "/tags" });
     expect(await screen.findByText("No tags yet.")).toBeInTheDocument();
   });

@@ -1,39 +1,41 @@
-// Deliberately basic styling — the visual design is a separate piece of
-// work. Colours and spacing live in the custom properties below so a
-// redesign can start there.
+// Night Owl theme: a midnight ground, moon-silver text and one owl-eye
+// amber accent. Barlow Condensed is the signage face (brand, nav, headings,
+// buttons), Cormorant Garamond sets bookmark titles, Karla everything else.
+// Fonts are loaded in index.html.
 
 :root {
-  --bg: #ffffff;
-  --surface: #f7f7f8;
-  --text: #1c1c1f;
-  --muted: #62626b;
-  --border: #dedee3;
-  --accent: #2553c9;
-  --accent-text: #ffffff;
-  --error: #b3261e;
-  --error-bg: #fdecea;
-  --success: #1b6e3a;
-  --success-bg: #e7f5ec;
-  --gutter: 1rem;
-  --max-width: 48rem;
-  --radius: 6px;
+  --bg: #0d1026;
+  --surface: #161b3a;
+  --surface-deep: #0a0d20;
+  --line: #2a3160;
+  --line-strong: #3a4378;
+  --text: #e6e8f2;
+  --moon: #c9cee0;
+  --muted: #9ba3c7;
+  --accent: #f2b33d;
+  --accent-text: #1a1406;
+  --error: #ffb4ab;
+  --error-bg: #3b1714;
+  --success: #9bdcb0;
+  --success-bg: #12301d;
 
-  color-scheme: light dark;
+  --font-sign: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-title: "Cormorant Garamond", Georgia, serif;
+  --font-body: Karla, system-ui, sans-serif;
+
+  --gutter: 1rem;
+  --max-width: 72rem;
+  --form-width: 36rem;
+  --radius: 12px;
+  --pill: 999px;
+  --tap: 2.75rem; // 44px minimum touch target
+
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (min-width: 48rem) {
   :root {
-    --bg: #151517;
-    --surface: #1f1f23;
-    --text: #ececf0;
-    --muted: #a0a0aa;
-    --border: #34343b;
-    --accent: #7ea2ff;
-    --accent-text: #0d1220;
-    --error: #ffb4ab;
-    --error-bg: #3b1714;
-    --success: #9bdcb0;
-    --success-bg: #12301d;
+    --gutter: 4rem;
   }
 }
 
@@ -47,22 +49,34 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  font-family: var(--font-body);
   line-height: 1.5;
 }
 
+::selection {
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
 a {
-  color: var(--accent);
+  color: var(--text);
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 0.2em;
+
+  &:hover {
+    color: var(--accent);
+  }
 }
 
 h1 {
-  font-size: 1.5rem;
-  margin: 0 0 1rem;
+  margin: 0 0 2rem;
+  font-family: var(--font-sign);
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-align: center;
 }
 
 input,
@@ -80,10 +94,33 @@ input[type="password"],
 select,
 textarea {
   width: 100%;
-  padding: 0.5rem 0.625rem;
-  border: 1px solid var(--border);
+  min-height: var(--tap);
+  padding: 0.625rem 1rem;
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: var(--bg);
+  background: var(--surface);
+
+  &::placeholder {
+    color: var(--muted);
+  }
+
+  &:hover {
+    border-color: var(--line-strong);
+  }
+}
+
+select[multiple] {
+  padding: 0.5rem;
+
+  option {
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+  }
+
+  option:checked {
+    background: var(--accent) linear-gradient(var(--accent), var(--accent));
+    color: var(--accent-text);
+  }
 }
 
 :focus-visible {
@@ -94,78 +131,154 @@ textarea {
 // Layout
 
 .page {
-  max-width: var(--max-width);
+  max-width: calc(var(--max-width) + 2 * var(--gutter));
   margin: 0 auto;
-  padding: 1.5rem var(--gutter) 3rem;
+  padding: 2.5rem var(--gutter) 4rem;
+
+  > .muted {
+    text-align: center;
+  }
+}
+
+.page-intro {
+  margin: -1.25rem 0 2rem;
+  text-align: center;
+  color: var(--muted);
 }
 
 .auth-page {
-  max-width: 24rem;
+  max-width: 28rem;
   margin: 0 auto;
-  padding: 3rem var(--gutter);
+  padding: 4rem var(--gutter);
 
   .brand {
-    font-weight: 700;
-    margin: 0 0 1.5rem;
+    display: flex;
+    justify-content: center;
+    margin: 0 0 2.5rem;
+  }
+
+  h1 {
+    font-size: 2.25rem;
+  }
+
+  > .muted {
+    text-align: center;
   }
 }
 
 .breadcrumb {
-  margin: 0 0 0.5rem;
-  font-size: 0.875rem;
+  margin: 0 0 0.75rem;
+  text-align: center;
+  font-family: var(--font-sign);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+
+  a {
+    color: var(--muted);
+    text-decoration: none;
+
+    &::before {
+      content: "← ";
+    }
+
+    &:hover {
+      color: var(--accent);
+    }
+  }
 }
 
 // Buttons
 
 .button,
 button[type="submit"] {
-  display: inline-block;
-  padding: 0.5rem 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap);
+  padding: 0 1.5rem;
   border: 1px solid var(--accent);
-  border-radius: var(--radius);
+  border-radius: var(--pill);
   background: var(--accent);
   color: var(--accent-text);
+  font-family: var(--font-sign);
+  font-size: 1.1875rem;
   font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   text-decoration: none;
   cursor: pointer;
 
+  &:hover {
+    background: #f6c461;
+    color: var(--accent-text);
+  }
+
   &:disabled {
-    opacity: 0.55;
+    opacity: 0.45;
     cursor: not-allowed;
   }
 }
 
 .button-quiet {
-  padding: 0.25rem 0.625rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap);
+  padding: 0 1.125rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--pill);
+  background: transparent;
+  color: var(--moon);
+  font-family: var(--font-sign);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 }
 
 .load-more {
-  display: block;
-  margin: 1.5rem auto 0;
+  display: flex;
+  margin: 2.5rem auto 0;
 }
 
 // Forms
 
 .form {
   display: grid;
-  gap: 1rem;
+  gap: 1.5rem;
+  max-width: var(--form-width);
+  margin: 0 auto;
 }
 
 .field label {
   display: block;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.375rem;
+  font-family: var(--font-sign);
+  font-size: 1.0625rem;
   font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--moon);
+
+  .muted {
+    text-transform: none;
+    letter-spacing: 0.02em;
+    font-weight: 500;
+  }
 }
 
 .actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 // Lists and tags
@@ -177,35 +290,55 @@ button[type="submit"] {
 }
 
 .tag {
-  display: inline-block;
-  padding: 0 0.5rem;
-  border-radius: 999px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  padding: 0 0.625rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--pill);
+  color: var(--accent);
+  font-family: var(--font-body);
   font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
   text-decoration: none;
+  vertical-align: middle;
 }
 
 a.tag:hover {
-  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+}
+
+h1 .tag {
+  min-height: 0;
+  padding: 0.125em 0.5em;
+  font-size: 0.5em;
 }
 
 .tag-cloud {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 0.625rem;
   margin: 0;
   padding: 0;
   list-style: none;
 
   .tag {
+    min-height: 2rem;
+    padding: 0 0.875rem;
     font-size: 0.9375rem;
-    padding: 0.125rem 0.625rem;
   }
 
   .count {
+    margin-left: 0.25em;
     color: var(--muted);
+  }
+
+  a.tag:hover .count {
+    color: inherit;
   }
 }
 
@@ -218,13 +351,17 @@ a.tag:hover {
 .error,
 .success {
   margin: 0;
-  padding: 0.625rem 0.75rem;
+  padding: 0.75rem 1rem;
   border-radius: var(--radius);
 }
 
 .error {
   color: var(--error);
   background: var(--error-bg);
+
+  a {
+    color: inherit;
+  }
 }
 
 .success {
