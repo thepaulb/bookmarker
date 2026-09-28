@@ -28,6 +28,7 @@
     "import": "node server/import-bookmarks.js",
     "import:pocket": "node server/import-bookmarks.js",
     "clean:urls": "node server/clean-urls.js",
+    "backup": "node server/backup.js",
     "test": "npm run test:server && npm run test:client",
     "test:server": "vitest run",
     "test:server:watch": "vitest",

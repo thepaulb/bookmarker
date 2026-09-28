@@ -1,0 +1,29 @@
+services:
+  app:
+    image: ghcr.io/thepaulb/bookmarker:latest
+    # `build: .` is kept alongside `image:` so `docker compose build` still
+    # works as a manual fallback (e.g. if the registry is unreachable) —
+    # normal deploys use `docker compose pull` to fetch the image CI built.
+    build: .
+    # No published port — only reachable through the shared Caddy (in its
+    # own ~/proxy compose project) over the external `web` network.
+    env_file:
+      - .env
+    environment:
+      DB_PATH: /data/bookmarks.db
+    volumes:
+      - bookmarker-data:/data
+    networks:
+      web:
+        # Unique name on the shared network — the Workout Tracker's service
+        # is also called `app`, so Caddy must address this one by alias.
+        aliases:
+          - bookmarker
+    restart: unless-stopped
+
+volumes:
+  bookmarker-data:
+
+networks:
+  web:
+    external: true

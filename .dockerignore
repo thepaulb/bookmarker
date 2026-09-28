@@ -1,0 +1,19 @@
+node_modules
+client/node_modules
+client/dist
+client/coverage
+coverage
+.git
+.github
+.env
+.env.*
+!.env.example
+*.db
+*.db-shm
+*.db-wal
+backups
+server/backups
+Pocket export
+Architecture
+.vscode
+.claude
