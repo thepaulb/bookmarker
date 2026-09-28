@@ -91,13 +91,20 @@ Your bookmarks live in `server/bookmarks.db`, which is not committed to git.
 Take a copy before running imports or clean-ups:
 
 ```bash
-sqlite3 server/bookmarks.db ".backup backups/bookmarks-$(date +%F).db"
+npm run backup
 ```
 
+This writes a timestamped copy to `server/backups/` and keeps the latest 30.
 `backups/` is ignored by git. To restore, stop the server, delete
 `server/bookmarks.db-wal` and `server/bookmarks.db-shm` if they exist (they
 belong to the current database), then copy the backup over
 `server/bookmarks.db`.
+
+## Deployment
+
+Production runs at https://bookmarks.theanvil.uk and deploys automatically on
+merge to `main`. See [DEPLOY.md](DEPLOY.md) for how it's set up, backups,
+restores and rollbacks.
 
 ## Tests
 
